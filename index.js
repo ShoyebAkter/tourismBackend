@@ -21,15 +21,35 @@ app.get('/', (req, res) => {
   res.send('Hello World!');
 });
 app.post("/message",async(req,res)=>{
-  const { name, message,from } = req.body;
+  const { name, message,from,touristName,touristPhone,place } = req.body;
   const msgInfo = {
+    touristName:touristName,
+    touristPhone:touristPhone,
     name:name,
     message: message,
-    from:from
+    from:from,
+    place:place
   }
   const db = client.db(dbName);
   const collection = db.collection(name);
   await collection.insertOne(msgInfo);
+})
+app.post("/payment",async(req,res)=>{
+  const {user,date,adults,childs,guide,days,place,price,pickUpLocation } = req.body;
+  const paymentDetails = {
+        From:user,
+        date:date,
+        adults:adults,
+        childs:childs,
+        guide:guide,
+        days:days,
+        place:place,
+        price:price,
+        pickUpLocation:pickUpLocation
+  }
+  const db = client.db(dbName);
+  const collection = db.collection("payment");
+  await collection.insertOne(paymentDetails);
 })
 app.post("/user",async(req,res)=>{
   const  {email,name}  = req.body;
@@ -61,6 +81,20 @@ app.get('/message/:name', async (req, res) => {
   try {
     const db = client.db(dbName);
     const collection = db.collection(name);
+
+    // Retrieve data from MongoDB
+    const data = await collection.find().toArray();
+
+    res.json(data);
+  } catch (error) {
+    console.error('Error fetching data from MongoDB:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+app.get('/payment', async (req, res) => {
+  try {
+    const db = client.db(dbName);
+    const collection = db.collection("payment");
 
     // Retrieve data from MongoDB
     const data = await collection.find().toArray();
